@@ -1,0 +1,6 @@
+Kafka:
+  addr: localhost:9092
+  msg_chan: 10000
+
+log_file:
+  path: /halo/halo2/logs/halo.log
