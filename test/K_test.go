@@ -1,6 +1,8 @@
 package test
 
-import "testing"
+import (
+	"testing"
+)
 
 func TestTest(t *testing.T) {
 	Test()
@@ -12,4 +14,8 @@ func TestEtcd(t *testing.T) {
 
 func TestEtcd2(t *testing.T) {
 	Etcd2()
+}
+
+func TestKafkaConsumer(t *testing.T) {
+	KafkaConsumer()
 }

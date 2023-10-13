@@ -10,7 +10,5 @@ Transfer 读取日志，发送到 ElasticSearch 分系日志
 >LogAgent 和 Transfer 是本次开发的项目
 
 通过 etcd 做配置管理，LogAgent 和 Transfer 监听 etcd 中定义的配置，若 etcd 中的配置发生变化，会实时通知 LogAgent 和 Transfer
-## etcd
-
-* 本项目通过 etcd 管理配置并且进行实时监听
-* 
+## LogAgent
+日志收集客户端，用来收集服务器上的日志

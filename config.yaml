@@ -2,5 +2,16 @@ Kafka:
   addr: localhost:9092
   msg_chan: 10000
 
+etcd:
+  addr: localhost:2379
+
 log_file:
-  path: /halo/halo2/logs/halo.log
+  halo_log:
+    path: /halo/halo2/logs/halo.log
+    topic: halo_log
+  sql_log:
+    path: /sql_log/sql.log
+    topic: sql_log
+
+
+

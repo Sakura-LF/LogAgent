@@ -6,13 +6,14 @@ import (
 	"github.com/hpcloud/tail"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
+	"strings"
 )
 
 var Tail *tail.Tail
 
 // InitTail 初始化Tail
 func InitTail() {
-	file := viper.GetString("log_file.path")
+	file := viper.GetString("log_file.halo_log.path")
 	config := tail.Config{
 		ReOpen:    true,
 		Follow:    true,
@@ -40,18 +41,19 @@ func ReadLog() {
 			logrus.Warn("tail file close , filename:", Tail.Filename)
 			continue
 		}
+		// 如果是空行就跳过
+		if len(strings.Trim(line.Text, "\r")) == 0 {
+			continue
+		}
 		// 测试是否能拿到msg
 		fmt.Println("msg:", line.Text)
 
 		// 把读出来的每一行数据包装成msg类型,发送到Kafka
 		msg := &sarama.ProducerMessage{
-			Topic: "HaloLogs",
+			Topic: viper.GetString("log_file.halo_log.topic"),
 			Value: sarama.StringEncoder(line.Text),
 		}
-		fmt.Println(msg)
 		// 包装完成之后丢到通道中
 		MsgChan <- msg
-		fmt.Println("send success")
-		fmt.Println(<-MsgChan)
 	}
 }

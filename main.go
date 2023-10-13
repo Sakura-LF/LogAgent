@@ -10,6 +10,12 @@ func main() {
 	tool.LoadConfig()
 	logrus.Info("Init Config")
 
+	//初始化etcd
+	tool.InitEtcd()
+
+	//从etcd拉取最新的配置
+	//tool.GetConfig()
+
 	// 初始化tail
 	tool.InitTail()
 
