@@ -7,13 +7,16 @@ import (
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 	"strings"
+	"sync"
 )
 
-var Tail *tail.Tail
+var HaloTail *tail.Tail
+var SqlTail *tail.Tail
 
 // InitTail 初始化Tail
 func InitTail() {
-	file := viper.GetString("log_file.halo_log.path")
+	HaloFile := viper.GetString("HaloLog.path")
+	SqlFile := viper.GetString("SqlLog.path")
 	config := tail.Config{
 		ReOpen:    true,
 		Follow:    true,
@@ -21,24 +24,61 @@ func InitTail() {
 		MustExist: false,
 		Poll:      true,
 	}
-
 	// 打开文件开始读取数据
-	tails, err := tail.TailFile(file, config)
+	halotails, err := tail.TailFile(HaloFile, config)
 	if err != nil {
-		logrus.Error("tail %s failed, err:%v\n\n", file, err)
+		logrus.Error("tail %s failed, err:%v\n\n", HaloFile, err)
 		return
 	}
-	Tail = tails
+
+	sqltails, err := tail.TailFile(SqlFile, config)
+	if err != nil {
+		logrus.Error("tail %s failed, err:%v\n\n", HaloFile, err)
+		return
+	}
+
+	HaloTail = halotails
+	SqlTail = sqltails
 	return
 }
 
 // ReadLog 读取每一行日志丢到通道
-func ReadLog() {
+func ReadLog(wg *sync.WaitGroup) {
+	wg.Add(2)
+	go ReadHaloLog(wg)
+	go ReadSqlLog(wg)
+
+	//循环读数据
+	//for {
+	//	line, ok := <-HaloTail.Lines
+	//	if !ok {
+	//		logrus.Warn("tail file close , filename:", HaloTail.Filename)
+	//		continue
+	//	}
+	//	// 如果是空行就跳过
+	//	if len(strings.Trim(line.Text, "\r")) == 0 {
+	//		continue
+	//	}
+	//	// 测试是否能拿到msg
+	//	fmt.Println("msg:", line.Text)
+	//
+	//	// 把读出来的每一行数据包装成msg类型,发送到Kafka
+	//	msg := &sarama.ProducerMessage{
+	//		Topic: viper.GetString("HaloLog.topic"),
+	//		Value: sarama.StringEncoder(line.Text),
+	//	}
+	//	// 包装完成之后丢到通道中
+	//	HaloLogMsgChan <- msg
+	//	fmt.Println("消息发送成功")
+	//}
+}
+
+func ReadHaloLog(wg *sync.WaitGroup) {
 	//循环读数据
 	for {
-		line, ok := <-Tail.Lines
+		line, ok := <-HaloTail.Lines
 		if !ok {
-			logrus.Warn("tail file close , filename:", Tail.Filename)
+			logrus.Warn("tail file close , filename:", HaloTail.Filename)
 			continue
 		}
 		// 如果是空行就跳过
@@ -46,14 +86,40 @@ func ReadLog() {
 			continue
 		}
 		// 测试是否能拿到msg
-		fmt.Println("msg:", line.Text)
+		fmt.Println("halo.log msg:", line.Text)
 
 		// 把读出来的每一行数据包装成msg类型,发送到Kafka
 		msg := &sarama.ProducerMessage{
-			Topic: viper.GetString("log_file.halo_log.topic"),
+			Topic: viper.GetString("HaloLog.topic"),
 			Value: sarama.StringEncoder(line.Text),
 		}
 		// 包装完成之后丢到通道中
-		MsgChan <- msg
+		HaloLogMsgChan <- msg
+		fmt.Println("消息发送成功")
+	}
+}
+
+func ReadSqlLog(wg *sync.WaitGroup) {
+	//循环读数据
+	for {
+		line, ok := <-SqlTail.Lines
+		if !ok {
+			logrus.Warn("tail file close , filename:", SqlTail.Filename)
+			continue
+		}
+		// 如果是空行就跳过
+		if len(strings.Trim(line.Text, "\r")) == 0 {
+			continue
+		}
+		// 测试是否能拿到msg
+		fmt.Println("sql.log msg:", line.Text)
+
+		// 把读出来的每一行数据包装成msg类型,发送到Kafka
+		//msg := &sarama.ProducerMessage{
+		//	Topic: viper.GetString("SqlLog.topic"),
+		//	Value: sarama.StringEncoder(line.Text),
+		//}
+		// 包装完成之后丢到通道中
+		//SqlLogMsgChan <- msg
 	}
 }

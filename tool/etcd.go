@@ -2,6 +2,7 @@ package tool
 
 import (
 	"context"
+	"fmt"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 	clientv3 "go.etcd.io/etcd/client/v3"
@@ -24,7 +25,7 @@ func InitEtcd() {
 
 }
 
-// 拉取日志配置收集配置项的函数
+// GetConfig 拉取日志配置收集配置项的函数
 func GetConfig(key string) {
 	// get
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
@@ -37,6 +38,11 @@ func GetConfig(key string) {
 	if len(resp.Kvs) == 0 {
 		logrus.Warnf("can't get any value by key:%s from etcd", key)
 		return
+	}
+
+	for _, value := range resp.Kvs {
+		fmt.Println("keys: ", string(value.Key))
+		fmt.Println("value: ", string(value.Value))
 	}
 	//keyValues := resp.Kvs[0]
 	// json格式字符串

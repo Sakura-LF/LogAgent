@@ -5,6 +5,20 @@ import (
 	"github.com/spf13/viper"
 )
 
+type Task struct {
+	HaloLog `mapstructure:"HaloLog"`
+	SqlLog  `mapstructure:"SqlLog"`
+}
+
+type HaloLog struct {
+	Topic string `mapstructure:"topic"`
+	Path  string `mapstructure:"path"`
+}
+type SqlLog struct {
+	Topic string `mapstructure:"topic"`
+	Path  string `mapstructure:"path"`
+}
+
 func LoadConfig() {
 	// 定义默认值,配置文件加载错误使用的值
 	SetDefault()

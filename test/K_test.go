@@ -16,6 +16,10 @@ func TestEtcd2(t *testing.T) {
 	Etcd2()
 }
 
-func TestKafkaConsumer(t *testing.T) {
-	KafkaConsumer()
+func TestLogTest(t *testing.T) {
+	LogTest()
+}
+
+func TestGoroutineTest(t *testing.T) {
+	GoroutineTest()
 }

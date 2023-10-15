@@ -5,6 +5,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/IBM/sarama"
+	"github.com/spf13/viper"
 	clientv3 "go.etcd.io/etcd/client/v3"
 	"log"
 	"sync"
@@ -30,36 +31,35 @@ func Etcd() {
 
 	defer cli.Close()
 
-	//// put
-	//ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-	//_, err = cli.Put(ctx, "name", "Sakura")
-	//cancel()
-	//if err != nil {
-	//	fmt.Println("Put failed:", err)
-	//}
-	//
-	//// get
-	//ctx, cancel = context.WithTimeout(context.Background(), 10*time.Second)
-	//gr, err := cli.Get(ctx, "name")
-	//cancel()
-	//if err != nil {
-	//	fmt.Println("get failed :", err)
-	//	return
-	//}
-
-	////
-	//for _, value := range gr.Kvs {
-	//	fmt.Println("key: ", string(value.Key))
-	//	fmt.Println("value: ", string(value.Value))
-	//}
-
-	watch := cli.Watch(context.Background(), "name")
-	for v := range watch {
-		for _, value := range v.Events {
-			fmt.Println("type:", value.Type, " key: ", string(value.Kv.Key), " value: ", string(value.Kv.Value))
-		}
+	// put
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	_, err = cli.Put(ctx, "log_collect", "")
+	cancel()
+	if err != nil {
+		fmt.Println("Put failed:", err)
 	}
 
+	// get
+	ctx, cancel = context.WithTimeout(context.Background(), 10*time.Second)
+	gr, err := cli.Get(ctx, "log_collect")
+	cancel()
+	if err != nil {
+		fmt.Println("get failed :", err)
+		return
+	}
+
+	//
+	for _, value := range gr.Kvs {
+		fmt.Println("key: ", string(value.Key))
+		fmt.Println("value: ", string(value.Value))
+	}
+
+	//watch := cli.Watch(context.Background(), "name")
+	//for v := range watch {
+	//	for _, value := range v.Events {
+	//		fmt.Println("type:", value.Type, " key: ", string(value.Kv.Key), " value: ", string(value.Kv.Value))
+	//	}
+	//}
 }
 
 func Etcd2() {
@@ -131,5 +131,50 @@ func KafkaConsumer() {
 			}
 		}(pc)
 	}
+	wg.Wait()
+}
+
+type Task struct {
+	HaloLog `mapstructure:"HaloLog"`
+	SqlLog  `mapstructure:"SqlLog"`
+}
+
+type HaloLog struct {
+	Topic string `mapstructure:"topic"`
+	Path  string `mapstructure:"path"`
+}
+type SqlLog struct {
+	Topic string `mapstructure:"topic"`
+	Path  string `mapstructure:"path"`
+}
+
+func LogTest() {
+	viper.SetConfigName("log_collect") //配置文件名称（无扩展名)
+	viper.SetConfigType("yaml")        //如果配置文件中没有扩展名，则需要配置此项
+	viper.AddConfigPath("../")         //查找配置文件所在的路径
+
+	err := viper.ReadInConfig() //查找并读取yaml配置文件
+	if err != nil {
+		panic(fmt.Errorf("Fatal error config:%s \n", err))
+	}
+
+	var C Task
+
+	err = viper.Unmarshal(&C)
+	if err != nil {
+		fmt.Println(err)
+	}
+
+}
+
+var wg *sync.WaitGroup
+
+func GoroutineTest() {
+	wg.Add(1)
+
+	go func() {
+		defer wg.Done()
+		fmt.Println("Sakura")
+	}()
 	wg.Wait()
 }

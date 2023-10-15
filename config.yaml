@@ -4,14 +4,13 @@ Kafka:
 
 etcd:
   addr: localhost:2379
+  collect_key: log_collect
 
-log_file:
-  halo_log:
-    path: /halo/halo2/logs/halo.log
-    topic: halo_log
-  sql_log:
-    path: /sql_log/sql.log
-    topic: sql_log
+HaloLog:
+  topic: halo_log
+  path: /TestLog/Halo/halo.log
 
-
+SqlLog:
+  topic: sql_log
+  path: /TestLog/Sql/sql.log
 
