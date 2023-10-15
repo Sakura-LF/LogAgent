@@ -48,29 +48,6 @@ func ReadLog(wg *sync.WaitGroup) {
 	go ReadHaloLog(wg)
 	go ReadSqlLog(wg)
 
-	//循环读数据
-	//for {
-	//	line, ok := <-HaloTail.Lines
-	//	if !ok {
-	//		logrus.Warn("tail file close , filename:", HaloTail.Filename)
-	//		continue
-	//	}
-	//	// 如果是空行就跳过
-	//	if len(strings.Trim(line.Text, "\r")) == 0 {
-	//		continue
-	//	}
-	//	// 测试是否能拿到msg
-	//	fmt.Println("msg:", line.Text)
-	//
-	//	// 把读出来的每一行数据包装成msg类型,发送到Kafka
-	//	msg := &sarama.ProducerMessage{
-	//		Topic: viper.GetString("HaloLog.topic"),
-	//		Value: sarama.StringEncoder(line.Text),
-	//	}
-	//	// 包装完成之后丢到通道中
-	//	HaloLogMsgChan <- msg
-	//	fmt.Println("消息发送成功")
-	//}
 }
 
 func ReadHaloLog(wg *sync.WaitGroup) {
