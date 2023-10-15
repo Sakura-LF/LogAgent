@@ -11,4 +11,15 @@ Transfer 读取日志，发送到 ElasticSearch 分系日志
 
 通过 etcd 做配置管理，LogAgent 和 Transfer 监听 etcd 中定义的配置，若 etcd 中的配置发生变化，会实时通知 LogAgent 和 Transfer
 ## LogAgent
-日志收集客户端，用来收集服务器上的日志
+日志收集客户端，用来收集服务器上的日志，通过Goroutine监控多个日志
+
+![2.png](asset%2Fimg%2F2.png)
+
+```go
+// ReadLog 读取每一行日志丢到通道
+func ReadLog(wg *sync.WaitGroup) {
+	wg.Add(2)
+	go ReadHaloLog(wg)
+	go ReadSqlLog(wg)
+}
+```
